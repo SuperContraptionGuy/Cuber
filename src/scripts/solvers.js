@@ -44,11 +44,31 @@ ERNO.Solver = function(){
 
 	this.Algorithm = function(twists, cycle) {
 		this.twists = twists
-		this.cycle = cycle
+		if(cycle.constructor === Array)
+			this.cycle = cycle
 
-		this.twist = function() {
-			twist(this.twists)
+		this.twist = function(cube) {
+			cube.twist(this.twists)
 		}
+	}
+
+	this.Algorithm.inverse = function() {
+		return new this.Algorithm(this.twists.reverse().invert(), this.cycle.reverse())
+	}
+
+	this.Algorithm.concat = function(a2) { 	// TODO: doesn't handle concatination of cycles yet
+		return new this.Algorithm(this.twists.concat(a2.twists))
+	}
+
+	this.Algorithm.repeat = function(n) {
+		newCycle = this.cycle
+		length = newCycle.length
+
+		for(i = 0; i < length; i++) {
+			newCycle[i] = this.cycle[(i * n) % length]
+		}
+
+		return new this.Algorithm(this.twists.multiply(n), newCycle)
 	}
 
 	//			algorithms and functions for solving:
@@ -59,25 +79,25 @@ ERNO.Solver = function(){
 	this.algorithms = {}
 
 	this.algorithms.commutator = function(a1, a2) {
-		return a1
-			.concat(a2)
-			.concat(a1.reverse().invert())
-			.concat(a2.reverse().invert());
+		return 	a1
+				.concat(a2)
+				.concat(a1.inverse())
+				.concat(a2.inverse())
 	}
 
 	this.algorithms.conjugate = function(a1, a2) {
-		return a1
-			.concat(a2)
-			.concat(a1.reverse().invert());
+		return 	a1
+				.concat(a2)
+				.concat(a1.inverse())
 	}
 
-	this.algorithms.negate = function(a) {
-		return a.reverse().invert();
-	}
+	
 
 
 	var algs = this.algorithms
 
+
+	// TODO: Update the algorithms below
 
 
 	// Simple algorithms ----------------
@@ -99,17 +119,13 @@ ERNO.Solver = function(){
 
 
 	// edges:
-	//var cycleEdges = commutator('mUM', 'd')	// 3 state cycle 	[ 7 > 17 > 11 > 7 ](clean)
 	algs.cycleEdges = new this.Algorithm(algs.commutator('mUM', 'd'), [7, 17, 11])
-	//var inverseCycleEdges = negate(cycleEdges)
-	algs.inverseCycleEdges = new this.Algorithm(algs.negate(algs.cycleEdges), [7, 11, 17])
 
 	// corners:
-	// var cornerDown = commutator('r', 'd') 	// translates 2 to from top layer to bottom layer 	[ 2 > 8 > 2 ](noisy on bottom layer)
 	algs.cornerDown = new this.Algorithm(algs.commutator('r', 'd'), [])
-	// var cycleCorners = commutator('rdR', 'u')	// 3 state cycle 	[ 0 > 8 > 2 > 0 ](clean)
 	algs.cycleCorners = new this.Algorithm(algs.commutator('rdR', 'u'), [0, 8, 2])
 	// var orientCorners = cornerDown.multiply(2) 	// Orients 2, 8, 24, 26(clean)
+	algs.orientCorners = new this.Algorithm(algs.cornerDown.)
 
 	// Conjugate algorithms -------------
 	// centers:
