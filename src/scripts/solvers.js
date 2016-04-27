@@ -77,17 +77,24 @@ function addQueue(action) {
 }
 
 function orientCube(front, top) {
+
+	console.log("Running orient cube alg with args: ", front, top)
+
 	// newTop = (top instanceof ERNO.Slice) ? top.origin.id : top
 	// newFront = (front instanceof ERNO.Slice) ? front.origin.id : front
 
 	var newTop = top
 	if(top instanceof ERNO.Slice) {
 		newTop = top.origin.id
+	} else if (top == undefined) {
+		return -1
 	}
 
 	var newFront = front
 	if(front instanceof ERNO.Slice) {
 		newFront = front.origin.id
+	} else if (front == undefined) {
+		return -1
 	}
 
 	// orient front face
@@ -240,7 +247,8 @@ function orientCube(front, top) {
 					} else { // it is front
 						//cube.twist(''.multiply(1))
 						if(newTop == up) {
-							//cube.twist(''.multiply(1))
+							console.log("returned false")
+							return false
 						} else {
 							if(newTop == down) {
 								return ('z'.multiply(2))
@@ -308,7 +316,7 @@ function orientCube(front, top) {
 	// 		}
 	// 	}
 	// }
-	return false	// no need to repeat this one for each operation.
+	// no need to repeat this one for each operation.
 }
 
 function switchCorners(corner1, corner2) { //	This function works for ending points on the top layer only.
@@ -491,14 +499,19 @@ ERNO.Solver = function(){
 
 	this.logic = function( cube ){ 
 
+		console.log("running Solver...")
+
 		if(cube.twistQueue.future.length > 0) {
 			// there are twists still in the queue, wait till they are gone.
+			console.log("Waiting for twists to complete.")
 			return true
 		}
 
 		// This is my first attempt at solving a rubik's cube programatically.
 		// Orient the cube
-		if(orientCube(cube.hasId(4).address, cube.hasId(10).address)) {
+		console.log("orienting the cube")
+		if(orientCube(cube.hasId(4).cubelets[0].address, cube.hasId(10).cubelets[0].address) != false) {
+			console.log("Cube oriented, waiting for turns to complete...")
 			return true
 		}
 
@@ -506,8 +519,9 @@ ERNO.Solver = function(){
 		var active
 		for(var i = 0; i < cube.up.corners.cubelets.length; i++) {
 			active = cube.up.corners.cubelets[i]
-			console.log(i)
+			console.log("for loop i val: ", i)
 			if(switchCorners(active, active.id)) {
+				console.log("repeating for corner alg")
 				return true
 			}
 			
