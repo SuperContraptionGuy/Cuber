@@ -33,8 +33,6 @@
 
 
 
-
-
 ERNO.Solver = function(){
 
 
@@ -42,8 +40,49 @@ ERNO.Solver = function(){
 	//  Having said that, it will probably be the most intense function like ... ever!
 	//  Check out my example in /scripts/solvers/stewart.js to see how you might go about it.
 
-	this.logic = function( cube ){ return false };;
+	this.state = 0
+
+	this.logic = function( cube ) { 
+		console.log("Solving...")
+		console.log("Current solve state: ", this.state)
+
+		//solving states
+		if(this.state == 0) {
+
+			this.state++
+			return true
+		}
+		if(this.state == 1) {
+
+			this.state++
+			return true
+		}
+		if(this.state == 2) {
+
+			this.state++
+			return true
+		}
+		if(this.state == 3) {
+
+			this.state++
+			return true
+		}
+
+		//solved state
+		if(this.state > 3) {
+
+			console.log("Solved state reached")
+			return false
+		}
+		
+
+	}
 }
+
+
+
+
+
 
 
 
@@ -118,3 +157,79 @@ ERNO.Solver.prototype.explain = function( text ){
 
 
 
+window.solver = new ERNO.Solver
+
+
+
+//			algorithms and functions for solving:
+
+
+// Algorithm functions ----------------------
+
+function commutator(a1, a2) {
+	return a1
+		.concat(a2)
+		.concat(a1.reverse().invert())
+		.concat(a2.reverse().invert());
+}
+
+function conjugate(a1, a2) {
+	return a1
+		.concat(a2)
+		.concat(a1.reverse().invert());
+}
+
+function negate(a) {
+	return a.reverse().invert();
+}
+
+// Cube functions ---------------------------
+
+function twist(twists) {
+	cube.twist(twists);
+}
+
+
+
+// Simple algorithms ----------------
+// centers:
+
+
+// edges:
+
+
+// corners:
+
+
+
+// Commutator algorithms ---------------
+// centers:
+var cycleCenters = commutator('m', 's')	// 3 state cycle 	[ 4 > 10 > 14 > 4 ](clean)
+
+// edges:
+var cycleEdges = commutator('mUM', 'd')	// 3 state cycle 	[ 7 > 17 > 11 > 7 ](clean)
+var inverseCycleEdges = negate(cycleEdges)
+
+// corners:
+var cornerDown = commutator('r', 'd') 	// translates 2 to from top layer to bottom layer 	[ 2 > 8 > 2 ](noisy on bottom layer)
+var cycleCorners = commutator('rdR', 'u')	// 3 state cycle 	[ 0 > 8 > 2 > 0 ](clean)
+var orientCorners = cprmerDown.multiply(2) 	// Orients 2, 8, 24, 26(clean)
+
+// Conjugate algorithms -------------
+// centers:
+
+
+// edges:
+var cycleEdgesOnFace = conjugate('ru', cycleEdges)	// 3 state cycle 	[ 1 > 7 > 5 > 1 ](clean)
+var reverseCycleEdges = conjugate('D', commutator('Mum', 'D')) 	// 3 state cycle 	[ 7 > 11 > 17 > 7 ](clean)
+
+// corners:
+
+
+// need:
+// corner orientation algorithms
+// edge orientation algorithms
+
+
+// flips edges 1, 7, 11, 25
+var flipEdges = commutator('mUM', 'dMdm').concat(conjugate('ddurru', cycleEdges))
