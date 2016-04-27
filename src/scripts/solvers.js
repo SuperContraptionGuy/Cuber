@@ -42,6 +42,98 @@ ERNO.Solver = function(){
 
 	this.state = 0
 
+	this.Algorithm = function(twists, cycle) {
+		this.twists = twists
+		this.cycle = cycle
+
+		this.twist = function() {
+			twist(this.twists)
+		}
+	}
+
+	//			algorithms and functions for solving:
+
+
+	// Algorithm functions ----------------------
+
+	this.algorithms = {}
+
+	this.algorithms.commutator = function(a1, a2) {
+		return a1
+			.concat(a2)
+			.concat(a1.reverse().invert())
+			.concat(a2.reverse().invert());
+	}
+
+	this.algorithms.conjugate = function(a1, a2) {
+		return a1
+			.concat(a2)
+			.concat(a1.reverse().invert());
+	}
+
+	this.algorithms.negate = function(a) {
+		return a.reverse().invert();
+	}
+
+
+	var algs = this.algorithms
+
+
+
+	// Simple algorithms ----------------
+	// centers:
+
+
+	// edges:
+
+
+	// corners:
+
+
+
+	// Commutator algorithms ---------------
+	// centers:
+	//var cycleCenters = commutator('m', 's')	// 3 state cycle 	[ 4 > 10 > 14 > 4 ](clean)
+	//cycleCenters = new ERNO.Solver.Algorithm(commutator('m', 's'), [4, 10, 14, 4])
+	algs.cycleCenters = new this.Algorithm(algs.commutator('m', 's'), [4, 10, 14])
+
+
+	// edges:
+	//var cycleEdges = commutator('mUM', 'd')	// 3 state cycle 	[ 7 > 17 > 11 > 7 ](clean)
+	algs.cycleEdges = new this.Algorithm(algs.commutator('mUM', 'd'), [7, 17, 11])
+	//var inverseCycleEdges = negate(cycleEdges)
+	algs.inverseCycleEdges = new this.Algorithm(algs.negate(algs.cycleEdges), [7, 11, 17])
+
+	// corners:
+	// var cornerDown = commutator('r', 'd') 	// translates 2 to from top layer to bottom layer 	[ 2 > 8 > 2 ](noisy on bottom layer)
+	algs.cornerDown = new this.Algorithm(algs.commutator('r', 'd'), [])
+	// var cycleCorners = commutator('rdR', 'u')	// 3 state cycle 	[ 0 > 8 > 2 > 0 ](clean)
+	algs.cycleCorners = new this.Algorithm(algs.commutator('rdR', 'u'), [0, 8, 2])
+	// var orientCorners = cornerDown.multiply(2) 	// Orients 2, 8, 24, 26(clean)
+
+	// Conjugate algorithms -------------
+	// centers:
+
+
+	// edges:
+	var cycleEdgesOnFace = conjugate('ru', cycleEdges)	// 3 state cycle 	[ 1 > 7 > 5 > 1 ](clean)
+	var reverseCycleEdges = conjugate('D', commutator('Mum', 'D')) 	// 3 state cycle 	[ 7 > 11 > 17 > 7 ](clean)
+
+	// corners:
+
+
+	// need:
+	// corner orientation algorithms
+	// edge orientation algorithms
+
+
+	// flips edges 1, 7, 11, 25
+	var flipEdges = commutator('mUM', 'dMdm').concat(conjugate('ddurru', cycleEdges))
+
+	// 		Functions for organizing and executing algorithms
+
+
+
 	this.logic = function( cube ) { 
 		console.log("Solving...")
 		console.log("Current solve state: ", this.state)
@@ -78,13 +170,6 @@ ERNO.Solver = function(){
 
 	}
 }
-
-
-
-
-
-
-
 
 
 //  This is the method called within Cube.loop() when Cube.isSolving === true.
@@ -161,75 +246,57 @@ window.solver = new ERNO.Solver
 
 
 
-//			algorithms and functions for solving:
-
-
-// Algorithm functions ----------------------
-
-function commutator(a1, a2) {
-	return a1
-		.concat(a2)
-		.concat(a1.reverse().invert())
-		.concat(a2.reverse().invert());
-}
-
-function conjugate(a1, a2) {
-	return a1
-		.concat(a2)
-		.concat(a1.reverse().invert());
-}
-
-function negate(a) {
-	return a.reverse().invert();
-}
-
-// Cube functions ---------------------------
-
-function twist(twists) {
-	cube.twist(twists);
-}
 
 
 
-// Simple algorithms ----------------
-// centers:
-
-
-// edges:
-
-
-// corners:
 
 
 
-// Commutator algorithms ---------------
-// centers:
-var cycleCenters = commutator('m', 's')	// 3 state cycle 	[ 4 > 10 > 14 > 4 ](clean)
-
-// edges:
-var cycleEdges = commutator('mUM', 'd')	// 3 state cycle 	[ 7 > 17 > 11 > 7 ](clean)
-var inverseCycleEdges = negate(cycleEdges)
-
-// corners:
-var cornerDown = commutator('r', 'd') 	// translates 2 to from top layer to bottom layer 	[ 2 > 8 > 2 ](noisy on bottom layer)
-var cycleCorners = commutator('rdR', 'u')	// 3 state cycle 	[ 0 > 8 > 2 > 0 ](clean)
-var orientCorners = cprmerDown.multiply(2) 	// Orients 2, 8, 24, 26(clean)
-
-// Conjugate algorithms -------------
-// centers:
 
 
-// edges:
-var cycleEdgesOnFace = conjugate('ru', cycleEdges)	// 3 state cycle 	[ 1 > 7 > 5 > 1 ](clean)
-var reverseCycleEdges = conjugate('D', commutator('Mum', 'D')) 	// 3 state cycle 	[ 7 > 11 > 17 > 7 ](clean)
-
-// corners:
+// // Simple algorithms ----------------
+// // centers:
 
 
-// need:
-// corner orientation algorithms
-// edge orientation algorithms
+// // edges:
 
 
-// flips edges 1, 7, 11, 25
-var flipEdges = commutator('mUM', 'dMdm').concat(conjugate('ddurru', cycleEdges))
+// // corners:
+
+
+
+// // Commutator algorithms ---------------
+// // centers:
+// //var cycleCenters = commutator('m', 's')	// 3 state cycle 	[ 4 > 10 > 14 > 4 ](clean)
+// cycleCenters = new ERNO.Solver.Algorithm(commutator('m', 's'), [4, 10, 14, 4])
+
+
+// // edges:
+// var cycleEdges = commutator('mUM', 'd')	// 3 state cycle 	[ 7 > 17 > 11 > 7 ](clean)
+// var inverseCycleEdges = negate(cycleEdges)
+
+// // corners:
+// var cornerDown = commutator('r', 'd') 	// translates 2 to from top layer to bottom layer 	[ 2 > 8 > 2 ](noisy on bottom layer)
+// var cycleCorners = commutator('rdR', 'u')	// 3 state cycle 	[ 0 > 8 > 2 > 0 ](clean)
+// var orientCorners = cornerDown.multiply(2) 	// Orients 2, 8, 24, 26(clean)
+
+// // Conjugate algorithms -------------
+// // centers:
+
+
+// // edges:
+// var cycleEdgesOnFace = conjugate('ru', cycleEdges)	// 3 state cycle 	[ 1 > 7 > 5 > 1 ](clean)
+// var reverseCycleEdges = conjugate('D', commutator('Mum', 'D')) 	// 3 state cycle 	[ 7 > 11 > 17 > 7 ](clean)
+
+// // corners:
+
+
+// // need:
+// // corner orientation algorithms
+// // edge orientation algorithms
+
+
+// // flips edges 1, 7, 11, 25
+// var flipEdges = commutator('mUM', 'dMdm').concat(conjugate('ddurru', cycleEdges))
+
+// // 		Functions for organizing and executing algorithms
