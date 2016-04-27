@@ -33,8 +33,6 @@
 
 
 
-
-
 ERNO.Solver = function(){
 
 
@@ -42,8 +40,27 @@ ERNO.Solver = function(){
 	//  Having said that, it will probably be the most intense function like ... ever!
 	//  Check out my example in /scripts/solvers/stewart.js to see how you might go about it.
 
-	this.logic = function( cube ){ return false };;
+	this.state = 0
+
+	this.logic = function( cube ) { 
+
+
+		console.log("cube solve state: ", this.state)
+
+		this.state++
+		if(this.state > 100) {
+			console.log("Solved!")
+			return false
+		}
+
+		return true
+	}
 }
+
+
+
+
+
 
 
 
@@ -118,3 +135,4 @@ ERNO.Solver.prototype.explain = function( text ){
 
 
 
+window.solver = new ERNO.Solver
