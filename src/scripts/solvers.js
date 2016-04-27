@@ -43,17 +43,39 @@ ERNO.Solver = function(){
 	this.state = 0
 
 	this.logic = function( cube ) { 
+		console.log("Solving...")
+		console.log("Current solve state: ", this.state)
 
+		//solving states
+		if(this.state == 0) {
 
-		console.log("cube solve state: ", this.state)
+			this.state++
+			return true
+		}
+		if(this.state == 1) {
 
-		this.state++
-		if(this.state > 100) {
-			console.log("Solved!")
-			return false
+			this.state++
+			return true
+		}
+		if(this.state == 2) {
+
+			this.state++
+			return true
+		}
+		if(this.state == 3) {
+
+			this.state++
+			return true
 		}
 
-		return true
+		//solved state
+		if(this.state > 3) {
+
+			console.log("Solved state reached")
+			return false
+		}
+		
+
 	}
 }
 
