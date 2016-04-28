@@ -42,58 +42,152 @@ ERNO.Solver = function(){
 
 	this.state = 0
 
-	this.Algorithm = function(twists, cycle) {
-		this.twists = twists
-		
+	this.Algorithm = function(twists) {
 
+
+		// Manage the actual move of the algorithm
+		this.Twists = function(twists) {
+			this.twists = twists
+
+			this.twist = function() {
+				cube.twist(this.twists)
+			}
+
+			this.inverse = function() {
+				return new this.constructor(this.twists.reverse().invert())
+			}
+			this.concat = function(a2) {
+				return new this.constructor(this.twists.concat(a2.twists.twists))
+			}
+			this.repeat = function(n) {
+				return new this.constructor(this.twists.multiply(n))
+			}
+		}
+		this.twists = new this.Twists(twists)
 		this.twist = function(cube) {
-			cube.twist(this.twists)
+			this.twists.twist(this.twists)
 		}
 
-		this.Cycle = function() {
 
-			this.pieces = []
+		// Manage the functional cycles produced by the algorithm
+		this.Cycles = function() {
 
-			this.Piece = function(address, orientation) {
+			this.cycles = []
 
-				this.address = address
-				this.orientation = orientation
+			this.Cycle = function(pieces) {
+
+				if(pieces instanceof Array) {
+					this.pieces = pieces
+				} else {
+					this.pieces = []
+				}
+
+				this.Piece = function(address, orientation) {
+
+					this.address = address
+					this.orientation = orientation
+				}
+
+				this.addPiece = function(address, orientation) {
+					this.pieces.push(new this.Piece(address, orientation))
+					return this
+				}
+
+				this.inverse = function() {
+					newCycle = new this.constructor()
+
+					newCycle.pieces = this.pieces.reverse()
+
+					return newCycle
+				}
+				this.concat = function(a2) {
+					// TODO: concatination handling -- causation analysis/recusive analysis
+				}
+				this.repeat = function(n) {
+					newCycle = this.constructor()
+					
+					this.pieces.forEach(function(piece, i) {
+						newCycle.pieces[i] = this.pieces[(i * n) % this.pieces.length]
+					})
+
+					return newCycle
+				}
 			}
 
-			this.addPiece = function(address, orientation) {
-				this.pieces.push(new this.Piece(address, orientation))
-				return this
+			this.faceCycle = new this.Cycle()
+			this.edgeCycle = new this.Cycle()
+			this.cornerCycle = new this.Cycle()
+
+			this.cycles.push(this.faceCycle)
+			this.cycles.push(this.edgeCycle)
+			this.cycles.push(this.cornerCycle)
+
+			this.inverse = function() {
+				newCycles = this.constructor()
+
+				this.cycles.forEach(function(cycle, i) {
+					newCycles.cycles[i] = cycle.inverse()
+				})
+
+				return newCycles
+			}
+			this.concat = function(a2) {
+				newCycles = this.constructor()
+
+				this.cycles.forEach(function(cycle, i) {
+					newCycles.cycles[i] = cycle.concat(a2)
+				})
+
+				return newCycles
+			}
+			this.repeat = function(n) {
+				newCycles = this.constructor()
+
+				this.cycles.forEach(function(cycle, i) {
+					newCycles.cycles[i] = cycle.repeat(n)
+				})
+
+				return newCycles
 			}
 		}
 
-		this.cycles = {}
+		this.cycles = new this.Cycles()
 
-		this.cycles.centers = new this.Cycle()
-		this.cycles.edges = new this.Cycle()
-		this.cycles.corners = new this.Cycle()
-	}
 
-	this.Algorithm.inverse = function() {
-		return new this.Algorithm(this.twists.reverse().invert(), this.cycle.reverse())
-	}
+		// Modifier functions used to combine or modifiy the algorithm
+		this.inverse = function() {
+			newTwists = this.twists.inverse()
+			newCycles = this.cycles.inverse()
+			newAlg = new this.constructor()
 
-	this.Algorithm.concat = function(a2) { 	// TODO: doesn't handle concatination of cycles yet
-		
-		newCycle = cycle
+			newAlg.twists = newTwists
+			newAlg.cycles = newCycles
 
-		return new this.Algorithm(this.twists.concat(a2.twists), newCycle)
-	}
-
-	this.Algorithm.repeat = function(n) {
-		newCycle = this.cycle
-		length = newCycle.length
-
-		for(i = 0; i < length; i++) {
-			newCycle[i] = this.cycle[(i * n) % length]
+			return newAlg
 		}
+		this.concat = function(a2) { 	// TODO: Cycles doesn't handle concatination of cycles yet
+			newTwists = this.twists.concat(a2)
+			newCycles = this.cycles.concat(a2)
+			newAlg = new this.constructor()
 
-		return new this.Algorithm(this.twists.multiply(n), newCycle)
+			newAlg.twists = newTwists
+			newAlg.cycles = newCycles
+
+			return newAlg
+		}
+		this.repeat = function(n) {
+			newTwists = this.twists.repeat(n)
+			newCycles = this.cycles.repeat(n)
+			newAlg = new this.constructor()
+
+			newAlg.twists = newTwists
+			newAlg.cycles = newCycles
+
+			return newAlg
+		}
 	}
+
+	
 
 	//			algorithms and functions for solving:
 
