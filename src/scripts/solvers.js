@@ -42,14 +42,23 @@ ERNO.Solver = function(){
 
 	this.state = 0
 
-	this.Algorithm = function(twists) {
+	this.Algorithm = function(Twists, Cycles) { 	// TODO: Cycles are not set when passing Cycles object
 
 
 		// Manage the actual move of the algorithm
 		this.Twists = function(twists) {
-			this.twists = twists
 
-			this.twist = function() {
+			if(twists != undefined) {
+				if(twists.constructor === String) {
+					this.twists = twists
+				} else {
+					this.twists = ''
+				}
+			} else {
+				this.twists = ''
+			}
+
+			this.twist = function(cube) {
 				cube.twist(this.twists)
 			}
 
@@ -63,21 +72,43 @@ ERNO.Solver = function(){
 				return new this.constructor(this.twists.multiply(n))
 			}
 		}
-		this.twists = new this.Twists(twists)
+
+		if(Twists != undefined) {
+			if(Twists.constructor === String) {
+				this.twists = new this.Twists(Twists)
+			} else {
+				this.twists = Twists
+			}
+		} else {
+			this.twists = new this.Twists()
+		}
+
 		this.twist = function(cube) {
-			this.twists.twist(this.twists)
+			this.twists.twist(cube)
+		}
+
+		this.setTwists = function(twists) {
+			this.twists.twists = twists
+		}
+
+		this.getTwists = function() {
+			return this.twists.twists
 		}
 
 
 		// Manage the functional cycles produced by the algorithm
-		this.Cycles = function() {
+		this.Cycles = function(cycles) {
 
 			this.cycles = []
 
 			this.Cycle = function(pieces) {
 
-				if(pieces instanceof Array) {
-					this.pieces = pieces
+				if(pieces != undefined) {
+					if(pieces.constructor === Array) {
+						this.pieces = pieces
+					} else {
+						this.pieces = pieces
+					}
 				} else {
 					this.pieces = []
 				}
@@ -114,16 +145,38 @@ ERNO.Solver = function(){
 				}
 			}
 
-			this.faceCycle = new this.Cycle()
-			this.edgeCycle = new this.Cycle()
-			this.cornerCycle = new this.Cycle()
-
+			if(cycles != undefined) {
+				if(cycles.constructor === Array) {
+					this.faceCycle = cycles[0]
+					this.edgeCycle = cycles[1]
+					this.cornerCycle = cycles[2]
+				} else {
+					this.faceCycle = cycles[0]
+					this.edgeCycle = cycles[1]
+					this.cornerCycle = cycles[2]
+				}
+			} else {
+				this.faceCycle = new this.Cycle()
+				this.edgeCycle = new this.Cycle()
+				this.cornerCycle = new this.Cycle()
+			}
 			this.cycles.push(this.faceCycle)
 			this.cycles.push(this.edgeCycle)
 			this.cycles.push(this.cornerCycle)
 
+			var parent = this
+
+			this.setCycles = function(cyclesArray) {
+				cyclesArray.forEach(function(cycle, i) {
+					cyclesArray[i].forEach(function(placeholder, j) {
+						if(cyclesArray[i][j][0] != undefined && cyclesArray[i][j][1] != undefined)
+						parent.cycles[i].addPiece(cyclesArray[i][j][0], cyclesArray[i][j][1])
+					})
+				})
+			}
+
 			this.inverse = function() {
-				newCycles = this.constructor()
+				newCycles = new this.constructor()
 
 				this.cycles.forEach(function(cycle, i) {
 					newCycles.cycles[i] = cycle.inverse()
@@ -132,7 +185,7 @@ ERNO.Solver = function(){
 				return newCycles
 			}
 			this.concat = function(a2) {
-				newCycles = this.constructor()
+				newCycles = new this.constructor()
 
 				this.cycles.forEach(function(cycle, i) {
 					newCycles.cycles[i] = cycle.concat(a2)
@@ -141,7 +194,7 @@ ERNO.Solver = function(){
 				return newCycles
 			}
 			this.repeat = function(n) {
-				newCycles = this.constructor()
+				newCycles = new this.constructor()
 
 				this.cycles.forEach(function(cycle, i) {
 					newCycles.cycles[i] = cycle.repeat(n)
@@ -151,40 +204,59 @@ ERNO.Solver = function(){
 			}
 		}
 
-		this.cycles = new this.Cycles()
+		if(Cycles != undefined) {
+			if(Cycles.constructor === this.Cycles) {
+				this.cycles = Cycles
+			} else {
+				this.cycles = new this.Cycles()
+			}
+		} else {
+			this.cycles = new this.Cycles()
+		}
+
+		this.setCycles = function(cyclesArray) {
+			this.cycles.setCycles(cyclesArray)
+		}
+
+		//this.getCycle = function() //	TODO: add get functions
+		
 
 
 		// Modifier functions used to combine or modifiy the algorithm
 		this.inverse = function() {
-			newTwists = this.twists.inverse()
-			newCycles = this.cycles.inverse()
-			newAlg = new this.constructor()
+			// newTwists = this.twists.inverse()
+			// newCycles = this.cycles.inverse()
+			// newAlg = new this.constructor(this.twists.inverse(), this.cycles.inverse())
 
-			newAlg.twists = newTwists
-			newAlg.cycles = newCycles
+			// newAlg.twists = newTwists
+			// newAlg.cycles = newCycles
 
-			return newAlg
+			return new this.constructor(this.twists.inverse(), this.cycles.inverse())
 		}
 		this.concat = function(a2) { 	// TODO: Cycles doesn't handle concatination of cycles yet
-			newTwists = this.twists.concat(a2)
-			newCycles = this.cycles.concat(a2)
-			newAlg = new this.constructor()
+			// newTwists = this.twists.concat(a2)
+			// newCycles = this.cycles.concat(a2)
+			// newAlg = new this.constructor()
 
-			newAlg.twists = newTwists
-			newAlg.cycles = newCycles
+			// newAlg.twists = newTwists
+			// newAlg.cycles = newCycles
 
-			return newAlg
+			// return newAlg
+			return new this.constructor(this.twists.concat(a2), this.cycles.concat(a2))
 		}
-		this.repeat = function(n) {
-			newTwists = this.twists.repeat(n)
-			newCycles = this.cycles.repeat(n)
-			newAlg = new this.constructor()
+		this.repeat = function(n) { 	// TOD: Cycles don't construct properly
+			// newTwists = this.twists.repeat(n)
+			// newCycles = this.cycles.repeat(n)
+			// newAlg = new this.constructor()
 
-			newAlg.twists = newTwists
-			newAlg.cycles = newCycles
+			// newAlg.twists = newTwists
+			// newAlg.cycles = newCycles
 
-			return newAlg
+			// return newAlg
+			return new this.constructor(this.twists.repeat(n), this.cycles.repeat(n))
 		}
+
+		return this
 	}
 
 	
@@ -212,7 +284,7 @@ ERNO.Solver = function(){
 	
 
 
-	var algs = this.algorithms
+	var a = this.algorithms
 
 
 	// TODO: Update the algorithms below
@@ -220,7 +292,17 @@ ERNO.Solver = function(){
 
 	// Simple algorithms ----------------
 
-	algs.L = new this.Algorithm('L')
+
+	a.L = new this.Algorithm('L')
+	a.L.setCycles([[[]], [[3, 0], [21, 0], [9, 0], [15, 0]], [[0, 0], [6, 0], [24, 0], [18, 0]]])
+
+	// a.L = a.L.constructor('L', 
+	// 	a.L.Cycles([
+	// 		a.L.cycles.faceCycle.constructor(), 
+	// 		a.L.cycles.edgeCycle.addPiece(3).addPiece(21).addPiece(9).addPiece(15), 
+	// 		a.L.cycles.cornerCycle.addPiece(0).addPiece(6).addPiece(24).addPiece(18)
+	// 	])
+	// )
 
 
 
