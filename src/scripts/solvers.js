@@ -43,6 +43,7 @@ ERNO.Solver = function(){
 	this.state = 0
 
 	this.Algorithm = function(Twists, Cycles) { 	// TODO: Cycles are not set when passing Cycles object
+		// console.log("cycles object passed to Algorithm costructor: ", Cycles)
 
 
 		// Manage the actual move of the algorithm
@@ -73,6 +74,7 @@ ERNO.Solver = function(){
 			}
 		}
 
+		this.twists = new this.Twists()
 		if(Twists != undefined) {
 			if(Twists.constructor === String) {
 				this.twists = new this.Twists(Twists)
@@ -80,7 +82,7 @@ ERNO.Solver = function(){
 				this.twists = Twists
 			}
 		} else {
-			this.twists = new this.Twists()
+			// this.twists = new this.Twists()
 		}
 
 		this.twist = function(cube) {
@@ -99,19 +101,14 @@ ERNO.Solver = function(){
 		// Manage the functional cycles produced by the algorithm
 		this.Cycles = function(cycles) {
 
+			// console.log("cycles object passed to cycles constructor", cycles)
+
 			this.cycles = []
 
 			this.Cycle = function(pieces) {
+				// console.log("array given to cycle constructor: ", pieces)
 
-				if(pieces != undefined) {
-					if(pieces.constructor === Array) {
-						this.pieces = pieces
-					} else {
-						this.pieces = pieces
-					}
-				} else {
-					this.pieces = []
-				}
+				this.pieces = []
 
 				this.Piece = function(address, orientation) {
 
@@ -124,6 +121,24 @@ ERNO.Solver = function(){
 					return this
 				}
 
+				if(pieces != undefined) {
+
+					if(pieces.constructor === Array) {
+						// this.addPiece(pieces
+							//console.log("array given to cycle constructor: ", pieces)
+							var parent = this
+							pieces.forEach(function(piece, i) {
+								// console.log("parent to Piece: ", parent)
+								parent.addPiece(piece[0], piece[1])
+							})
+					} else {
+						this.pieces = pieces
+					}
+				} else {
+					
+				}
+
+
 				this.inverse = function() {
 					newCycle = new this.constructor()
 
@@ -134,10 +149,13 @@ ERNO.Solver = function(){
 				this.concat = function(a2) {
 					// TODO: concatination handling -- causation analysis/recusive analysis
 				}
-				this.repeat = function(n) {
+				this.repeat = function(n) { 		// TODO: this or downstream is broken, not returning proper cycle object...
+					console.log("running repeat in cycle")
 					newCycle = this.constructor()
 					
 					this.pieces.forEach(function(piece, i) {
+						console.log("piece object passed: ", piece)
+						console.log("piece object created: ", this.pieces[(i * n) % this.pieces.length])
 						newCycle.pieces[i] = this.pieces[(i * n) % this.pieces.length]
 					})
 
@@ -145,11 +163,12 @@ ERNO.Solver = function(){
 				}
 			}
 
+			// console.log("Cycles constructor recieves: ", cycles)
 			if(cycles != undefined) {
 				if(cycles.constructor === Array) {
-					this.faceCycle = cycles[0]
-					this.edgeCycle = cycles[1]
-					this.cornerCycle = cycles[2]
+					this.faceCycle = new this.Cycle(cycles[0])
+					this.edgeCycle = new this.Cycle(cycles[1])
+					this.cornerCycle = new this.Cycle(cycles[2])
 				} else {
 					this.faceCycle = cycles[0]
 					this.edgeCycle = cycles[1]
@@ -197,19 +216,23 @@ ERNO.Solver = function(){
 				newCycles = new this.constructor()
 
 				this.cycles.forEach(function(cycle, i) {
+					console.log("cycle array element: ", cycle)
+					console.log("cycles array [", i, "] is set to", cycle.repeat(n))
 					newCycles.cycles[i] = cycle.repeat(n)
 				})
-
+				console.log("repeat cycles output: ", newCycles)
 				return newCycles
 			}
 		}
 
+		
 		if(Cycles != undefined) {
-			if(Cycles.constructor === this.Cycles) {
-				this.cycles = Cycles
-			} else {
-				this.cycles = new this.Cycles()
-			}
+			// if(Cycles.constructor === this.Cycles) {
+				// console.log("got cycles object: ", Cycles)
+				this.cycles = new this.Cycles(Cycles)
+			// } else {
+				// this.cycles = new this.Cycles()
+			// }
 		} else {
 			this.cycles = new this.Cycles()
 		}
@@ -253,6 +276,7 @@ ERNO.Solver = function(){
 			// newAlg.cycles = newCycles
 
 			// return newAlg
+
 			return new this.constructor(this.twists.repeat(n), this.cycles.repeat(n))
 		}
 
