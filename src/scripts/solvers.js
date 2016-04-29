@@ -138,6 +138,16 @@ ERNO.Solver = function(){
 					
 				}
 
+				this.getArray = function() {
+					var array = []
+
+					this.pieces.forEach(function(piece, i) {
+						array[i] = [piece.address, piece.orientation]
+					})
+
+					return array
+				}
+
 
 				this.inverse = function() {
 					newCycle = new this.constructor()
@@ -150,15 +160,18 @@ ERNO.Solver = function(){
 					// TODO: concatination handling -- causation analysis/recusive analysis
 				}
 				this.repeat = function(n) { 		// TODO: this or downstream is broken, not returning proper cycle object...
-					console.log("running repeat in cycle")
-					newCycle = this.constructor()
+					// console.log("running repeat in cycle")
+
+					// var array 			// I need a get structure to get an array that I can work with.
+					newCycle = new this.constructor()
+					var parent = this
 					
 					this.pieces.forEach(function(piece, i) {
-						console.log("piece object passed: ", piece)
-						console.log("piece object created: ", this.pieces[(i * n) % this.pieces.length])
-						newCycle.pieces[i] = this.pieces[(i * n) % this.pieces.length]
+						// console.log("piece object passed: ", piece)
+						// console.log("piece object created: ", parent.pieces[(i * n) % parent.pieces.length])
+						newCycle.pieces[i] = parent.pieces[(i * n) % parent.pieces.length]
 					})
-
+					// console.log("repeat of cycle returned: ", newCycle)
 					return newCycle
 				}
 			}
@@ -166,15 +179,18 @@ ERNO.Solver = function(){
 			// console.log("Cycles constructor recieves: ", cycles)
 			if(cycles != undefined) {
 				if(cycles.constructor === Array) {
+					// console.log("creating new cycles based on array")
 					this.faceCycle = new this.Cycle(cycles[0])
 					this.edgeCycle = new this.Cycle(cycles[1])
 					this.cornerCycle = new this.Cycle(cycles[2])
 				} else {
-					this.faceCycle = cycles[0]
-					this.edgeCycle = cycles[1]
-					this.cornerCycle = cycles[2]
+					// console.log("using passed cycles ones")
+					this.faceCycle = cycles.cycles[0]
+					this.edgeCycle = cycles.cycles[1]
+					this.cornerCycle = cycles.cycles[2]
 				}
 			} else {
+				// console.log("creating new cycles")
 				this.faceCycle = new this.Cycle()
 				this.edgeCycle = new this.Cycle()
 				this.cornerCycle = new this.Cycle()
@@ -193,6 +209,16 @@ ERNO.Solver = function(){
 					})
 				})
 			}
+
+			this.getArray = function() {
+					var array = []
+
+					this.cycles.forEach(function(cycle, i) {
+						array[i] = cycle.getArray()
+					})
+
+					return array
+				}
 
 			this.inverse = function() {
 				newCycles = new this.constructor()
@@ -213,14 +239,16 @@ ERNO.Solver = function(){
 				return newCycles
 			}
 			this.repeat = function(n) {
-				newCycles = new this.constructor()
+
+
+				newCycles = new this.constructor() 	// need get method
 
 				this.cycles.forEach(function(cycle, i) {
-					console.log("cycle array element: ", cycle)
-					console.log("cycles array [", i, "] is set to", cycle.repeat(n))
+					// console.log("cycle array element: ", cycle)
+					// console.log("cycles array [", i, "] is set to", cycle.repeat(n))
 					newCycles.cycles[i] = cycle.repeat(n)
 				})
-				console.log("repeat cycles output: ", newCycles)
+				// console.log("repeat cycles output: ", newCycles)
 				return newCycles
 			}
 		}
@@ -317,8 +345,10 @@ ERNO.Solver = function(){
 	// Simple algorithms ----------------
 
 
-	a.L = new this.Algorithm('L')
-	a.L.setCycles([[[]], [[3, 0], [21, 0], [9, 0], [15, 0]], [[0, 0], [6, 0], [24, 0], [18, 0]]])
+	// a.L = new this.Algorithm('L')
+	// a.L.setCycles([[[]], [[3, 0], [21, 0], [9, 0], [15, 0]], [[0, 0], [6, 0], [24, 0], [18, 0]]])
+
+	a.L = new this.Algorithm('L', [[], [[3, 0], [21, 0], [9, 0], [15, 0]], [[0, 0], [6, 0], [24, 0], [18, 0]]])
 
 	// a.L = a.L.constructor('L', 
 	// 	a.L.Cycles([
